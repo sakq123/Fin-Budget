@@ -1,0 +1,535 @@
+<html><head><base href="https://budgetplanner.com/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Budget Planner Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+    :root {
+        --primary-color: #4a90e2;
+        --secondary-color: #34495e;
+        --background-color: #f5f7fa;
+        --section-bg-color: #ffffff;
+        --text-color: #333333;
+        --input-border-color: #e0e0e0;
+    }
+    body {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+        background-color: var(--background-color);
+        color: var(--text-color);
+    }
+    .header {
+        background-color: var(--primary-color);
+        padding: 8px 0;
+    }
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .header-content i {
+        font-size: 1.3em;
+        margin-right: 8px;
+        color: #ffffff;
+    }
+    h1 {
+        font-size: 1.3em;
+        font-weight: 600;
+        color: #ffffff;
+    }
+    .main-container {
+        display: flex;
+        max-width: 1400px;
+        margin: 20px auto;
+        padding: 0 20px;
+    }
+    .input-section {
+        flex: 2;
+        padding-right: 20px;
+    }
+    .results-section {
+        flex: 1;
+        min-width: 300px;
+        padding-left: 20px;
+    }
+    .input-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    .section {
+        background-color: var(--section-bg-color);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    .section:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+        font-size: 1.1em;
+        font-weight: 600;
+        color: var(--secondary-color);
+        margin-bottom: 15px;
+    }
+    label {
+        display: block;
+        margin-bottom: 3px;
+        font-weight: 400;
+        font-size: 0.85em;
+    }
+    input, select {
+        background-color: #ffffff;
+        border: 1px solid var(--input-border-color);
+        border-radius: 4px;
+        padding: 8px;
+        transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 0.85em;
+        margin-bottom: 10px;
+    }
+    input:focus, select:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+    }
+    button {
+        background-color: var(--primary-color);
+        color: #ffffff;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        font-size: 0.85em;
+        font-weight: 600;
+        margin-bottom: 10px;
+        margin-right: 10px;
+    }
+    button:hover {
+        background-color: #3a7bc8;
+    }
+    #summary {
+        display: flex;
+        flex-direction: column;
+        background-color: #e8f4f8;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .result {
+        font-weight: 400;
+        font-size: 0.85em;
+    }
+    #chartContainer {
+        width: 100%;
+        max-width: 600px;
+        margin: 20px auto;
+    }
+    @media (max-width: 1024px) {
+        .main-container {
+            flex-direction: column;
+        }
+        .input-section, .results-section {
+            width: 100%;
+            padding: 0;
+        }
+    }
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+    .summary-label {
+        font-weight: 600;
+        font-size: 0.85em;
+    }
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    @media (max-width: 600px) {
+        .input-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    @media (max-width: 768px) {
+        body {
+            font-size: 14px;
+        }
+        h1 {
+            font-size: 2em;
+        }
+        h2 {
+            font-size: 1.1em;
+        }
+        .summary-label, .result {
+            font-size: 0.85em;
+        }
+        button {
+            width: calc(50% - 5px);
+            margin-right: 10px;
+        }
+        button:nth-child(2n) {
+            margin-right: 0;
+        }
+    }
+    @media (max-width: 480px) {
+        .section {
+            padding: 12px;
+        }
+        input, select, button {
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            margin-right: 0;
+        }
+    }
+    .section h2 i, .summary-label i {
+        margin-right: 8px;
+        color: var(--primary-color);
+    }
+    label i {
+        margin-right: 5px;
+        color: var(--secondary-color);
+    }
+    button i {
+        margin-right: 5px;
+    }
+</style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <i class="fas fa-chart-line"></i>
+            <h1>FinBudget Pro</h1>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="input-section">
+            <div class="input-grid">
+                <div class="section">
+                    <h2><i class="fas fa-dollar-sign"></i> Revenue</h2>
+                    <label for="totalSales"><i class="fas fa-cash-register"></i> Total Sales (PKR)</label>
+                    <input type="number" id="totalSales" placeholder="Enter amount">
+                    
+                    <label for="unitsSold"><i class="fas fa-cubes"></i> Units Sold</label>
+                    <input type="number" id="unitsSold" placeholder="Enter quantity">
+                    
+                    <label for="productPrice"><i class="fas fa-tag"></i> Price (PKR)</label>
+                    <input type="number" id="productPrice" placeholder="Enter price">
+                </div>
+                
+                <div class="section">
+                    <h2><i class="fas fa-box"></i> COGS</h2>
+                    <label for="productCost"><i class="fas fa-box-open"></i> Cost/Unit (PKR)</label>
+                    <input type="number" id="productCost" placeholder="Enter cost">
+                    
+                    <label for="packagingCost"><i class="fas fa-box"></i> Packaging/Unit (PKR)</label>
+                    <input type="number" id="packagingCost" placeholder="Enter cost">
+                    
+                    <label for="shippingCost"><i class="fas fa-truck"></i> Shipping/Unit (PKR)</label>
+                    <input type="number" id="shippingCost" placeholder="Enter cost">
+                </div>
+                
+                <div class="section">
+                    <h2><i class="fas fa-bullhorn"></i> Marketing</h2>
+                    <label for="adSpend"><i class="fas fa-ad"></i> Ad Spend (PKR)</label>
+                    <input type="number" id="adSpend" placeholder="Enter amount">
+                    
+                    <label for="discounts"><i class="fas fa-percent"></i> Discounts (PKR)</label>
+                    <input type="number" id="discounts" placeholder="Enter amount">
+                    
+                    <label for="otherMarketing"><i class="fas fa-bullhorn"></i> Other Marketing (PKR)</label>
+                    <input type="number" id="otherMarketing" placeholder="Enter amount">
+                </div>
+                
+                <div class="section">
+                    <h2><i class="fas fa-undo"></i> Returns & Refunds</h2>
+                    <label for="returnRate"><i class="fas fa-undo"></i> Return Rate (%)</label>
+                    <input type="number" id="returnRate" placeholder="Enter percentage" min="0" max="100" step="0.1">
+                    
+                    <label for="damagedReturns"><i class="fas fa-trash-alt"></i> Damaged Returns (PKR)</label>
+                    <input type="number" id="damagedReturns" placeholder="Enter amount" min="0">
+                </div>
+                
+                <div class="section">
+                    <h2><i class="fas fa-money-bill-wave"></i> Fees</h2>
+                    <label for="platformSubscription"><i class="fas fa-shopping-cart"></i> Platform Sub. (PKR)</label>
+                    <input type="number" id="platformSubscription" placeholder="Enter amount" min="0">
+                    
+                    <label for="shippingHandling"><i class="fas fa-box-open"></i> Shipping Fee (PKR)</label>
+                    <input type="number" id="shippingHandling" placeholder="Enter amount" min="0">
+                </div>
+            </div>
+            
+            <button onclick="calculateProfit()"><i class="fas fa-calculator"></i> Calculate Profit</button>
+            <button onclick="resetForm()"><i class="fas fa-undo"></i> Reset</button>
+            <button onclick="printSummary()"><i class="fas fa-file-pdf"></i> Print Summary</button>
+        </div>
+        
+        <div class="results-section">
+            <div class="section" id="summary">
+                <h2><i class="fas fa-chart-pie"></i> Budget Summary</h2>
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-money-bill-wave"></i> Revenue:</span>
+                    <span id="revenueOverview" class="result"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-box"></i> Total COGS:</span>
+                    <span id="totalCOGS" class="result"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-bullhorn"></i> Total Marketing:</span>
+                    <span id="totalMarketingCosts" class="result"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-undo"></i> Total Returns:</span>
+                    <span id="totalReturnsRefunds" class="result"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-money-bill-wave"></i> Total Fees:</span>
+                    <span id="totalFees" class="result"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-chart-line"></i> Gross Profit:</span>
+                    <span id="grossProfit" class="result"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-chart-bar"></i> Net Profit:</span>
+                    <span id="netProfit" class="result"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-percentage"></i> Profit Margin:</span>
+                    <span id="profitMargin" class="result"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label"><i class="fas fa-chart-pie"></i> ROAS:</span>
+                    <span id="roas" class="result"></span>
+                </div>
+            </div>
+
+            <div id="chartContainer">
+                <canvas id="profitChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let profitChart;
+
+        function formatCurrency(amount) {
+            const absAmount = Math.abs(amount);
+            if (absAmount >= 1000000) {
+                return (amount / 1000000).toLocaleString('en-PK', { 
+                    style: 'currency', 
+                    currency: 'PKR',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2 
+                }) + 'M';
+            } else if (absAmount >= 1000) {
+                return (amount / 1000).toLocaleString('en-PK', { 
+                    style: 'currency', 
+                    currency: 'PKR',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2 
+                }) + 'K';
+            } else {
+                return amount.toLocaleString('en-PK', { 
+                    style: 'currency', 
+                    currency: 'PKR',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        }
+
+        function calculateProfit() {
+            const totalSales = parseFloat(document.getElementById('totalSales').value) || 0;
+            const unitsSold = parseInt(document.getElementById('unitsSold').value) || 0;
+            const productPrice = parseFloat(document.getElementById('productPrice').value) || 0;
+
+            const productCost = parseFloat(document.getElementById('productCost').value) || 0;
+            const packagingCost = parseFloat(document.getElementById('packagingCost').value) || 0;
+            const shippingCost = parseFloat(document.getElementById('shippingCost').value) || 0;
+
+            const adSpend = parseFloat(document.getElementById('adSpend').value) || 0;
+            const discounts = parseFloat(document.getElementById('discounts').value) || 0;
+            const otherMarketing = parseFloat(document.getElementById('otherMarketing').value) || 0;
+
+            const returnRate = parseFloat(document.getElementById('returnRate').value) || 0;
+            const damagedReturns = parseFloat(document.getElementById('damagedReturns').value) || 0;
+
+            const platformSubscription = parseFloat(document.getElementById('platformSubscription').value) || 0;
+            const shippingHandling = parseFloat(document.getElementById('shippingHandling').value) || 0;
+
+            const calculatedRevenue = unitsSold * productPrice;
+            const totalSalesValue = totalSales > 0 ? totalSales : calculatedRevenue;
+            const totalCOGS = (productCost + packagingCost + shippingCost) * unitsSold;
+
+            const totalMarketingCosts = adSpend + discounts + otherMarketing;
+            const returnedUnits = Math.round(unitsSold * (returnRate / 100));
+            const totalReturnsRefunds = (returnedUnits * shippingCost) + damagedReturns;
+
+            const totalFees = platformSubscription + shippingHandling;
+
+            const grossProfit = totalSalesValue - totalCOGS;
+            const netProfit = totalSalesValue - (totalCOGS + totalMarketingCosts + totalReturnsRefunds + totalFees);
+            const profitMargin = (netProfit / totalSalesValue) * 100;
+            const roas = adSpend > 0 ? (totalSalesValue / adSpend) : 'N/A';
+
+            document.getElementById('revenueOverview').textContent = `${formatCurrency(totalSalesValue)} (${unitsSold.toLocaleString()} units)`;
+            document.getElementById('totalCOGS').textContent = formatCurrency(totalCOGS);
+            document.getElementById('totalMarketingCosts').textContent = formatCurrency(totalMarketingCosts);
+            document.getElementById('totalReturnsRefunds').textContent = formatCurrency(totalReturnsRefunds);
+            document.getElementById('totalFees').textContent = formatCurrency(totalFees);
+            document.getElementById('grossProfit').textContent = formatCurrency(grossProfit);
+            document.getElementById('netProfit').textContent = formatCurrency(netProfit);
+            document.getElementById('profitMargin').textContent = `${profitMargin.toFixed(2)}%`;
+            document.getElementById('roas').textContent = typeof roas === 'number' ? roas.toFixed(2) : roas;
+
+            updateChart(totalSalesValue, totalCOGS, totalMarketingCosts, totalReturnsRefunds, totalFees, netProfit);
+        }
+
+        function updateChart(revenue, cogs, marketing, returns, fees, profit) {
+            const ctx = document.getElementById('profitChart').getContext('2d');
+            
+            if (profitChart) {
+                profitChart.destroy();
+            }
+
+            profitChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Revenue', 'COGS', 'Marketing', 'Returns', 'Fees', 'Net Profit'],
+                    datasets: [{
+                        label: 'Budget Breakdown',
+                        data: [revenue, -cogs, -marketing, -returns, -fees, profit],
+                        backgroundColor: [
+                            'rgba(74, 144, 226, 0.6)',
+                            'rgba(231, 76, 60, 0.6)',
+                            'rgba(230, 126, 34, 0.6)',
+                            'rgba(241, 196, 15, 0.6)',
+                            'rgba(155, 89, 182, 0.6)',
+                            'rgba(46, 204, 113, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(74, 144, 226, 1)',
+                            'rgba(231, 76, 60, 1)',
+                            'rgba(230, 126, 34, 1)',
+                            'rgba(241, 196, 15, 1)',
+                            'rgba(155, 89, 182, 1)',
+                            'rgba(46, 204, 113, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function resetForm() {
+            document.querySelectorAll('input').forEach(input => {
+                input.value = '';
+            });
+
+            document.getElementById('revenueOverview').textContent = '';
+            document.getElementById('totalCOGS').textContent = '';
+            document.getElementById('totalMarketingCosts').textContent = '';
+            document.getElementById('totalReturnsRefunds').textContent = '';
+            document.getElementById('totalFees').textContent = '';
+            document.getElementById('grossProfit').textContent = '';
+            document.getElementById('netProfit').textContent = '';
+            document.getElementById('profitMargin').textContent = '';
+            document.getElementById('roas').textContent = '';
+
+            if (profitChart) {
+                profitChart.data.datasets[0].data = [0, 0, 0, 0, 0, 0];
+                profitChart.update();
+            }
+        }
+
+        function printSummary() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(24);
+            doc.setTextColor(74, 144, 226);
+            doc.text("FinBudget Pro - Budget Summary", 105, 20, null, null, "center");
+
+            doc.setFontSize(12);
+            doc.setTextColor(100);
+            const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            doc.text(`Generated on: ${today}`, 20, 30);
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(14);
+            doc.setTextColor(0);
+            let y = 50;
+            const summaryItems = document.querySelectorAll('.summary-item');
+            summaryItems.forEach(item => {
+                const label = item.querySelector('.summary-label').textContent;
+                const value = item.querySelector('.result').textContent;
+                doc.text(`${label} ${value}`, 20, y);
+                y += 10;
+            });
+
+            y += 10;
+            const chartImage = profitChart.toBase64Image();
+            doc.addImage(chartImage, 'PNG', 20, y, 170, 100);
+
+            y += 110;
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text("FinBudget Pro - Your Trusted Budget Planning Tool", 105, y, null, null, "center");
+
+            doc.save("budget_summary.pdf");
+        }
+
+        function initializeSliders() {
+        }
+
+        window.addEventListener('load', initializeSliders);
+        updateChart(0, 0, 0, 0, 0, 0);
+    </script>
+
+</body></html>
